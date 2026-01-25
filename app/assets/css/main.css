@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@reference "tailwindcss";
+
+@layer base {
+  :root {
+    /* Seaside palette accents */
+    --sea-teal: theme(colors.teal.400);
+    --sea-teal-strong: theme(colors.teal.500);
+    --sea-sky: theme(colors.cyan.300);
+  }
+
+  html,
+  body {
+    @apply bg-slate-950 text-slate-100;
+  }
+}
+
+@layer components {
+  .section {
+    @apply w-full pb-16;
+  }
+
+  .container {
+    @apply mx-auto max-w-6xl px-4;
+  }
+
+  .heading {
+    @apply text-3xl md:text-5xl font-black tracking-tight;
+  }
+
+  .subheading {
+    @apply mt-3 text-slate-400;
+  }
+
+  .card {
+    @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-xl bg-teal-500 text-white font-semibold px-6 py-3 hover:bg-teal-400 transition;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center rounded-xl text-teal-300 px-6 py-3 hover:bg-white/5 transition;
+  }
+
+  .chip {
+    @apply rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-slate-200;
+  }
+}

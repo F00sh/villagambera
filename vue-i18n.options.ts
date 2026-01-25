@@ -1,0 +1,36 @@
+export default {
+  legacy: false,
+  locale: 'en',
+  messages: {
+    en: {
+      bookNow: 'Book now',
+      search: 'Search apartments',
+      checkIn: 'Check-in',
+      checkOut: 'Check-out',
+      adults: 'Adults',
+      children: 'Children',
+      selectApartment: 'Select apartment',
+      checkAvailability: 'Check availability',
+    },
+    hr: {
+      bookNow: 'Rezerviraj',
+      search: 'Pretraži apartmane',
+      checkIn: 'Dolazak',
+      checkOut: 'Odlazak',
+      adults: 'Odrasli',
+      children: 'Djeca',
+      selectApartment: 'Odaberite apartman',
+      checkAvailability: 'Provjeri dostupnost',
+    },
+    de: {
+      bookNow: 'Jetzt buchen',
+      search: 'Apartments suchen',
+      checkIn: 'Anreise',
+      checkOut: 'Abreise',
+      adults: 'Erwachsene',
+      children: 'Kinder',
+      selectApartment: 'Apartment wählen',
+      checkAvailability: 'Verfügbarkeit prüfen',
+    },
+  },
+}
