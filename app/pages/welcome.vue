@@ -39,6 +39,9 @@ const iframeUrl = computed(() => {
     checkout: searchParams.value.checkout,
     numadult: String(searchParams.value.adults),
     lang: locale.value,
+    iframe: '1',
+    hideheader: '1',
+    hidefooter: '1',
   })
 
   return `https://beds24.com/booking2.php?${params.toString()}`
