@@ -14,7 +14,7 @@
           </p>
 
           <div class="mt-8">
-            <SearchWidget />
+            <BookingWidget />
           </div>
 
           <div class="mt-6">

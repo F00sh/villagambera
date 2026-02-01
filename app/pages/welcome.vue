@@ -29,11 +29,12 @@ async function onSearch(payload: {
 /* --------------------------------------------------
   Beds24 iframe URL
 -------------------------------------------------- */
+const runtimeConfig = useRuntimeConfig()
 const iframeUrl = computed(() => {
   if (!searchParams.value) return ''
 
   const params = new URLSearchParams({
-    propid: '151309',
+    propid: String(runtimeConfig.public?.beds24PropertyId || ''),
     checkin: searchParams.value.checkin,
     checkout: searchParams.value.checkout,
     numadult: String(searchParams.value.adults),

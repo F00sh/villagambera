@@ -7,6 +7,15 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/i18n',
   ],
+  runtimeConfig: {
+    // Private server-only keys
+    beds24ApiKey: process.env.BEDS24_API_KEY,
+    beds24PropKey: process.env.BEDS24_PROP_KEY,
+    // Public values safe to expose to client
+    public: {
+      beds24PropertyId: process.env.BEDS24_PROPERTY_ID || '151309',
+    },
+  },
   i18n: {
     locales: [
       { code: 'en', iso: 'en', name: 'English' },
