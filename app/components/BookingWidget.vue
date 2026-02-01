@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-const props = defineProps<{ fixedRoomId?: number; compact?: boolean }>();
+const props = defineProps<{ fixedRoomId?: number; compact?: boolean; closable?: boolean }>();
+const emit = defineEmits<{ (e: 'close'): void }>();
 
 type Room = { id: number; name: string; type: string; maxGuests: number };
 type Day = {
@@ -35,6 +36,22 @@ const children = ref(0);
 const selectedRoom = computed(() => ROOMS.find(r => r.id === roomId.value) ?? ROOMS[0]);
 const maxGuests = computed(() => selectedRoom.value?.maxGuests ?? 1);
 const guests = computed(() => adults.value + children.value);
+
+// Room navigation for mobile/compact
+const roomIndex = computed(() => Math.max(0, ROOMS.findIndex(r => r.id === roomId.value)));
+function setRoomByIndex(idx: number) {
+  if (!ROOMS.length) return;
+  const i = (idx + ROOMS.length) % ROOMS.length;
+  roomId.value = ROOMS[i].id;
+}
+function prevRoom() { setRoomByIndex(roomIndex.value - 1); }
+function nextRoom() { setRoomByIndex(roomIndex.value + 1); }
+
+// Steppers for guests
+function incAdults() { if (guests.value < maxGuests.value) adults.value += 1; }
+function decAdults() { if (adults.value > 1) adults.value -= 1; }
+function incChildren() { if (guests.value < maxGuests.value) children.value += 1; }
+function decChildren() { if (children.value > 0) children.value -= 1; }
 
 watch([roomId, adults, children], () => {
   if (adults.value < 1) adults.value = 1;
@@ -76,6 +93,23 @@ const monthKey = computed(() => `${viewYear.value}-${String(viewMonth.value).pad
 const days = ref<Day[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
+const triedAutoJump = ref(false);
+const totalPrice = computed(() => {
+  if (!arrival.value || !departure.value) return { amount: 0, nights: 0, hasPrice: false };
+  let sum = 0;
+  let nights = 0;
+  let hasAnyPrice = false;
+  const cur = isoToLocalDate(arrival.value);
+  const end = isoToLocalDate(departure.value);
+  while (cur < end) {
+    const iso = localDateToISO(cur);
+    const d = dayObj(iso);
+    if (d && d.price != null) { sum += Number(d.price); hasAnyPrice = true; }
+    nights += 1;
+    cur.setDate(cur.getDate() + 1);
+  }
+  return { amount: sum, nights, hasPrice: hasAnyPrice };
+});
 
 // Selection
 const arrival = ref<string | null>(null);
@@ -185,6 +219,34 @@ async function loadMonth() {
     // keep selection consistent
     if (arrival.value && !canSelectArrival(arrival.value)) arrival.value = null;
     if (arrival.value && departure.value && !validateRangeForClick(arrival.value, departure.value)) departure.value = null;
+
+    // If first load has no availability in current month, jump to first available month ahead
+    if (!triedAutoJump.value) {
+      const hasAvail = Array.isArray(res.days) && res.days.some(d => d.available);
+      if (!hasAvail) {
+        // look ahead up to 12 months
+        const start = new Date(viewYear.value, viewMonth.value - 1, 1);
+        for (let i = 1; i <= 12; i++) {
+          const y = start.getFullYear() + Math.floor((start.getMonth() + i) / 12);
+          const m = ((start.getMonth() + i) % 12) + 1;
+          const mk = `${y}-${String(m).padStart(2, "0")}`;
+          try {
+            const ahead = await $fetch<{ days: Day[] }>("/api/beds24/room-dates", {
+              query: { roomId: roomId.value, month: mk },
+            });
+            if (ahead.days && ahead.days.some(d => d.available)) {
+              viewYear.value = y;
+              viewMonth.value = m;
+              days.value = ahead.days;
+              break;
+            }
+          } catch {
+            // ignore and continue
+          }
+        }
+      }
+      triedAutoJump.value = true;
+    }
   } catch {
     error.value = "Could not load availability from Beds24. Check keys and server logs.";
     days.value = [];
@@ -296,35 +358,49 @@ function goToPayment() {
         <div class="title">Book your stay</div>
         <div class="times">Check-in 16:00–24:00 · Check-out by 10:00</div>
       </div>
-      <button class="clear" type="button" @click="clearDates" :disabled="!arrival && !departure">Clear</button>
-    </div>
-
-    <label v-if="!isFixedRoom" class="field">
-      Room
-      <select v-model.number="roomId">
-        <option v-for="r in ROOMS" :key="r.id" :value="r.id">
-          {{ r.name }} · {{ r.type }} · up to {{ r.maxGuests }}
-        </option>
-      </select>
-    </label>
-
-    <div class="row">
-      <label class="field">
-        Adults
-        <input type="number" v-model.number="adults" min="1" :max="maxGuests" />
-      </label>
-      <label class="field">
-        Children
-        <input type="number" v-model.number="children" min="0" :max="maxGuests - adults" />
-      </label>
-    </div>
-
-    <div class="calendar">
-      <div class="cal-header">
-        <button type="button" @click="prevMonth">‹</button>
-        <div class="cal-title">{{ monthTitle() }}</div>
-        <button type="button" @click="nextMonth">›</button>
+      <div class="flex items-center gap-2">
+        <button class="clear" type="button" @click="clearDates" :disabled="!arrival && !departure">Clear</button>
+        <button v-if="closable" class="close" type="button" @click="emit('close')" aria-label="Close">×</button>
       </div>
+    </div>
+
+    
+
+    <div class="content-grid">
+      <div class="left">
+        <!-- Room switcher (all breakpoints) -->
+        <div v-if="!isFixedRoom" class="room-switcher">
+          <button type="button" class="switch" @click="prevRoom" aria-label="Previous room">‹</button>
+          <div class="room-title">{{ selectedRoom.name }} · up to {{ selectedRoom.maxGuests }}</div>
+          <button type="button" class="switch" @click="nextRoom" aria-label="Next room">›</button>
+        </div>
+
+        <!-- Guest steppers -->
+        <div class="row">
+          <div class="stepper">
+            <div class="label">Adults</div>
+            <div class="controls">
+              <button type="button" class="step-btn" @click="decAdults">−</button>
+              <div class="value">{{ adults }}</div>
+              <button type="button" class="step-btn" @click="incAdults" :disabled="guests >= maxGuests">+</button>
+            </div>
+          </div>
+          <div class="stepper">
+            <div class="label">Children</div>
+            <div class="controls">
+              <button type="button" class="step-btn" @click="decChildren">−</button>
+              <div class="value">{{ children }}</div>
+              <button type="button" class="step-btn" @click="incChildren" :disabled="guests >= maxGuests">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="calendar">
+          <div class="cal-header">
+            <button type="button" @click="prevMonth">‹</button>
+            <div class="cal-title">{{ monthTitle() }}</div>
+            <button type="button" @click="nextMonth">›</button>
+          </div>
 
       <div class="controls">
         <div class="selected">
@@ -370,26 +446,32 @@ function goToPayment() {
         >
           <template v-if="cell.iso">
             <div class="d">{{ Number(cell.iso.slice(-2)) }}</div>
-            <div class="p">{{ displayPrice(cell.iso) }}</div>
+            <div class="p">{{ '' }}</div>
           </template>
         </button>
       </div>
 
-      <div class="legend">
-        <span class="swatch green"></span> Selected stay
-        <span class="swatch red"></span> Unavailable
-        <span class="swatch white"></span> Available
+          <div class="legend">
+            <span class="swatch green"></span> Selected stay
+            <span class="swatch red"></span> Unavailable
+            <span class="swatch white"></span> Available
+          </div>
+        </div>
       </div>
-    </div>
 
+      <div class="summary">
+        <div class="sum-card">
+          <div class="sum-row"><span>Arrival</span><span>{{ arrival || '—' }}</span></div>
+          <div class="sum-row"><span>Departure</span><span>{{ departure || '—' }}</span></div>
+          <div class="sum-row"><span>Nights</span><span>{{ selectedNights || '—' }}</span></div>
+          <div class="sum-row"><span>Guests</span><span>{{ guests }}</span></div>
+          <div class="sum-total"><span>Total price</span><span>{{ totalPrice.hasPrice && selectedNights ? `€${totalPrice.amount.toFixed(0)}` : 'At checkout' }}</span></div>
+        </div>
 
+        <button class="cta" type="button" :disabled="!canBook" @click="goToPayment">Continue on Beds24</button>
 
-    <button class="cta" type="button" :disabled="!canBook" @click="goToPayment">
-      Continue on Beds24
-    </button>
-
-    <div class="fineprint">
-      Green = selected stay. Red = unavailable. White = available. Only valid arrival/departure options are clickable.
+        <div class="fineprint">Green = selected stay. Red = unavailable. White = available. Only valid arrival/departure options are clickable.</div>
+      </div>
     </div>
   </div>
 </template>
@@ -407,13 +489,13 @@ function goToPayment() {
   --ok: 34, 197, 94;                     /* green-500 */
   --bad: 239, 68, 68;                    /* red-500 */
 
-  max-width: 560px;
+  max-width: 860px;
   display: grid;
-  gap: 10px;
+  gap: 12px;
   padding: 14px;
   border-radius: 16px;
-  background: var(--bg);
-  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.1);
   box-shadow: 0 8px 28px var(--shadow);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -423,9 +505,11 @@ function goToPayment() {
 
 /* Compact variant */
 .widget.compact {
-  max-width: 420px;
+  max-width: 860px;
   gap: 8px;
   padding: 10px;
+  max-height: 85dvh;
+  overflow: auto;
 }
 .widget.compact .title { font-size: 0.95rem; }
 .widget.compact .times { font-size: 0.8rem; }
@@ -448,6 +532,8 @@ function goToPayment() {
   color: var(--fg);
 }
 .clear:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.close { border: 1px solid var(--border); background: rgba(255,255,255,0.5); padding: 6px 10px; border-radius: 10px; }
 
 .field { display: grid; gap: 6px; }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -532,6 +618,28 @@ function goToPayment() {
 
 .error { color: #b00020; }
 .fineprint { font-size: 0.85rem; color: var(--fg-soft); }
+
+/* Two-column content */
+.content-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 768px) {
+  .content-grid { grid-template-columns: 5fr 4fr; align-items: start; }
+}
+.summary { display: grid; gap: 10px; }
+.sum-card { display: grid; gap: 6px; border: 1px solid var(--border); background: rgba(255,255,255,0.6); border-radius: 12px; padding: 10px; backdrop-filter: blur(10px); }
+.sum-row { display: flex; justify-content: space-between; font-size: 0.95rem; }
+.sum-total { display: flex; justify-content: space-between; font-weight: 700; padding-top: 6px; border-top: 1px dashed var(--border); }
+
+/* Mobile room switcher */
+.room-switcher { display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; gap: 6px; margin-bottom: 6px; }
+.room-switcher .switch { height: 36px; width: 36px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.6); }
+.room-switcher .room-title { font-weight: 600; font-size: 0.95rem; color: var(--fg); text-align: center; }
+
+/* Steppers */
+.stepper { display: grid; grid-template-columns: 1fr; gap: 4px; }
+.stepper .label { font-size: 0.9rem; color: var(--fg-soft); }
+.stepper .controls { display: grid; grid-template-columns: 36px 1fr 36px; align-items: center; gap: 6px; }
+.stepper .step-btn { height: 36px; width: 36px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.6); }
+.stepper .value { text-align: center; font-weight: 600; }
 
 /* Style the embedded guest form as a glass panel */
 :deep(.guest-form) {

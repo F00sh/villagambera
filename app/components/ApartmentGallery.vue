@@ -116,12 +116,9 @@ onUnmounted(stop)
 </template>
 
 <style scoped>
+/* use smoother, quicker fade for snappier feel */
 .fade-enter-active,
-.fade-leave-active {
-  transition: opacity 600ms ease;
-}
+.fade-leave-active { transition: opacity 240ms var(--ease-smooth); }
 .fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
+.fade-leave-to { opacity: 0; }
 </style>

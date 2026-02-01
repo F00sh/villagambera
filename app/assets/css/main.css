@@ -8,6 +8,13 @@
     --sea-teal: theme(colors.teal.400);
     --sea-teal-strong: theme(colors.teal.500);
     --sea-sky: theme(colors.cyan.300);
+
+    /* Motion */
+    --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1); /* standard ease-out */
+    --ease-emphasis: cubic-bezier(0.33, 1, 0.68, 1); /* stronger ease-out */
+    --dur-fast: 160ms;
+    --dur-base: 220ms;
+    --dur-slow: 320ms;
   }
 
   html,
@@ -17,6 +24,7 @@
 }
 
 @layer components {
+  .hero-smooth { transition: min-height var(--dur-slow) var(--ease-smooth); will-change: min-height; }
   .section {
     @apply w-full pb-16;
   }
@@ -48,4 +56,27 @@
   .chip {
     @apply rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-slate-200;
   }
+}
+
+/* Smooth animation helpers (global) */
+@layer utilities {
+  .t-smooth { transition: all var(--dur-base) var(--ease-smooth); }
+
+  /* Fade */
+  .fade-enter-active, .fade-leave-active { transition: opacity var(--dur-base) var(--ease-smooth); }
+  .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+  /* Expand (auto-height) */
+  .expand-enter-active, .expand-leave-active {
+    overflow: hidden;
+    transition: height var(--dur-base) var(--ease-smooth), opacity var(--dur-fast) var(--ease-smooth);
+  }
+  .expand-enter-from, .expand-leave-to { height: 0; opacity: 0; }
+
+  /* Menu pop (scale + fade) */
+  .menu-enter-active, .menu-leave-active {
+    transform-origin: top right;
+    transition: transform var(--dur-fast) var(--ease-smooth), opacity var(--dur-fast) var(--ease-smooth);
+  }
+  .menu-enter-from, .menu-leave-to { opacity: 0; transform: scale(0.98); }
 }

@@ -132,8 +132,5 @@ function toggle(slug: string) {
 </template>
 
 <style scoped>
-.expand-enter-active,
-.expand-leave-active { transition: height 0.3s ease, opacity 0.2s ease; overflow: hidden; }
-.expand-enter-from,
-.expand-leave-to { height: 0; opacity: 0; }
+/* using global expand transition classes from main.css */
 </style>
