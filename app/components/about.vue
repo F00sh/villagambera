@@ -1,11 +1,11 @@
 <template>
-  <section class="section bg-gray-200">
+  <section class="section bg-gray-200 py-20 md:py-40">
     <div class="container">
       <div
-        class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center"
+        class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center"
       >
-        <!-- LEFT: Gallery -->
-        <div>
+        <!-- LEFT: Gallery (mobile second) -->
+        <div class="order-2 lg:order-1">
           <AboutGallery
             :slides="[
               { src: '/img/about-1.jpg', alt: 'Seaside apartments' },
@@ -20,11 +20,11 @@
           />
         </div>
 
-        <!-- RIGHT: Text -->
-        <div class="text-center lg:text-left">
-          <h2 class="heading text-gray-900">About Us</h2>
+        <!-- RIGHT: Text (mobile first) -->
+        <div class="order-1 lg:order-2 text-center lg:text-left">
+          <h2 class="heading">About Us</h2>
 
-          <p class="subheading text-gray-700 mt-4">
+          <p class="subheading text-gray-800 mt-4">
             Family-run seaside apartments designed for calm, comfort and easy living.
           </p>
 
@@ -37,7 +37,16 @@
             comfort to make your stay effortless.
           </p>
 
-          <div class="mt-8">
+          <div class="mt-8 hidden md:block">
+            <NuxtLink to="/apartments" class="btn-primary">
+              Booking
+            </NuxtLink>
+          </div>
+        </div>
+
+        <!-- Mobile button below gallery -->
+        <div class="order-3 lg:hidden text-center">
+          <div class="mt-4">
             <NuxtLink to="/apartments" class="btn-primary">
               Booking
             </NuxtLink>

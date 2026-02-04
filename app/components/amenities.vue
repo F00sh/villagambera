@@ -29,17 +29,17 @@ const amenitySlides = [
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <!-- Apartments -->
           <div
-            class="relative overflow-hidden rounded-3xl bg-gradient-to-b from-gray-900/60 to-gray-900/20 border border-white/10 p-6 md:p-8 shadow-lg hover:shadow-teal-500/10 transition-shadow"
+            class="relative overflow-hidden rounded-3xl bg-gradient-to-b from-gray-900/60 to-gray-900/20 border border-white/10 p-6 md:p-8 shadow-lg hover:shadow-lime-500/10 transition-shadow"
             aria-labelledby="amenities-apartments"
           >
-            <div class="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-teal-500/20 blur-2xl" />
-            <div class="absolute -bottom-20 -left-20 h-52 w-52 rounded-full bg-teal-400/10 blur-2xl" />
+            <div class="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-lime-500/20 blur-2xl" />
+            <div class="absolute -bottom-20 -left-20 h-52 w-52 rounded-full bg-lime-400/10 blur-2xl" />
 
             <div class="flex items-center gap-3 mb-6">
-              <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-500/15 text-teal-300 text-2xl">
+              <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-lime-500/15 text-lime-300 text-2xl">
                 🏠
               </div>
-              <h3 id="amenities-apartments" class="text-2xl md:text-3xl tracking-tight">
+              <h3 id="amenities-apartments" class="text-2xl md:text-3xl tracking-tight text-blue-600">
                 Apartments
               </h3>
             </div>
@@ -56,17 +56,17 @@ const amenitySlides = [
 
           <!-- Outdoors -->
           <div
-            class="relative overflow-hidden rounded-3xl bg-gradient-to-b from-gray-900/60 to-gray-900/20 border border-white/10 p-6 md:p-8 shadow-lg hover:shadow-teal-500/10 transition-shadow"
+            class="relative overflow-hidden rounded-3xl bg-gradient-to-b from-gray-900/60 to-gray-900/20 border border-white/10 p-6 md:p-8 shadow-lg hover:shadow-lime-500/10 transition-shadow"
             aria-labelledby="amenities-outdoors"
           >
-            <div class="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-teal-500/20 blur-2xl" />
-            <div class="absolute -bottom-20 -left-20 h-52 w-52 rounded-full bg-teal-400/10 blur-2xl" />
+            <div class="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-lime-500/20 blur-2xl" />
+            <div class="absolute -bottom-20 -left-20 h-52 w-52 rounded-full bg-lime-400/10 blur-2xl" />
 
             <div class="flex items-center gap-3 mb-6">
-              <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-500/15 text-teal-300 text-2xl">
+              <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-lime-500/15 text-lime-300 text-2xl">
                 🌿
               </div>
-              <h3 id="amenities-outdoors" class="text-2xl md:text-3xl tracking-tight">
+              <h3 id="amenities-outdoors" class="text-2xl md:text-3xl tracking-tight text-blue-600">
                 Outdoors
               </h3>
             </div>

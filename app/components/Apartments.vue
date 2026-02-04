@@ -12,13 +12,13 @@ const slides = [
   <section class="section bg-gray-200 pt-20">
     <div class="container">
       <div
-        class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center"
+        class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center"
       >
         <!-- LEFT: Text -->
         <div class="text-center lg:text-left">
-          <h2 class="heading text-gray-900">Apartments</h2>
+          <h2 class="heading">Apartments</h2>
 
-          <p class="subheading text-gray-700 mt-4">
+          <p class="subheading text-gray-800 mt-4">
             Seven unique apartments, each with its own charm and comfort.
           </p>
 

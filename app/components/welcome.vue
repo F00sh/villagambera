@@ -13,12 +13,13 @@ function toggleCalendar() {
   <section class="section bg-gray-200">
     <BackgroundCarousel
       class="hero-smooth min-h-screen flex items-center"
+      stickTop
     >
       <div class="container w-full">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center py-16 md:py-20 lg:py-24">
           <!-- Left: Title + CTAs -->
           <div class="text-center md:text-left">
-            <h1 class="heading text-gray-100">Welcome to Villa Gambera</h1>
+            <h1 class="heading">Welcome to Villa Gambera</h1>
             <p class="subheading text-gray-300 mt-4 max-w-2xl mx-auto md:mx-0">
               The perfect base to explore the seaside charm and hidden gems of Pirovac.
             </p>

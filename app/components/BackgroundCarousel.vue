@@ -19,6 +19,10 @@ const props = defineProps({
   interval: {
     type: Number,
     default: 5000
+  },
+  stickTop: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -51,7 +55,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="container" class="relative w-full overflow-hidden">
+  <div ref="container" :class="['w-full overflow-hidden', props.stickTop ? 'sticky top-0' : 'relative']">
     <div
       v-for="(slide, index) in slidesList"
       :key="index"

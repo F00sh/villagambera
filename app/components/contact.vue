@@ -1,7 +1,7 @@
 <template>
   <section class="relative w-full">
-    <BackgroundCarousel class="w-full py-16 min-h-[60vh]" :overlay="true">
-      <div class="container max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-10">
+    <BackgroundCarousel class="w-full pt-16 pb-0 min-h-[60vh]" :overlay="true">
+      <div class="container max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-10 mb-16 md:mb-24">
 
         <!-- Contact Info -->
         <div class="flex flex-col justify-center space-y-6">
@@ -17,7 +17,7 @@
               <span class="font-semibold text-slate-200">Email:</span>
               <a
                 href="mailto:hello@example.com"
-                class="ml-2 text-teal-300 hover:underline"
+                class="ml-2 text-lime-300 hover:underline"
               >
                 hello@example.com
               </a>
@@ -27,7 +27,7 @@
               <span class="font-semibold text-slate-200">Phone:</span>
               <a
                 href="tel:+1234567890"
-                class="ml-2 text-teal-300 hover:underline"
+                class="ml-2 text-lime-300 hover:underline"
               >
                 +1 (234) 567-890
               </a>
@@ -48,7 +48,7 @@
               type="text"
               required
               placeholder="John Doe"
-              class="w-full rounded-lg border border-white/10 bg-white/5 text-slate-100 placeholder:text-slate-400 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              class="w-full rounded-lg border border-white/10 bg-white/5 text-slate-100 placeholder:text-slate-400 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500"
             />
           </div>
 
@@ -60,7 +60,7 @@
               type="email"
               required
               placeholder="john@example.com"
-              class="w-full rounded-lg border border-white/10 bg-white/5 text-slate-100 placeholder:text-slate-400 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              class="w-full rounded-lg border border-white/10 bg-white/5 text-slate-100 placeholder:text-slate-400 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500"
             />
           </div>
 
@@ -72,7 +72,7 @@
               rows="4"
               required
               placeholder="Tell us what you need…"
-              class="w-full rounded-lg border border-white/10 bg-white/5 text-slate-100 placeholder:text-slate-400 px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-teal-500"
+              class="w-full rounded-lg border border-white/10 bg-white/5 text-slate-100 placeholder:text-slate-400 px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-lime-500"
             ></textarea>
           </div>
 

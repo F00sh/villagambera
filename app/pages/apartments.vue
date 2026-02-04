@@ -21,7 +21,8 @@ const apartments = computed(() =>
       slug,
       roomId: p.roomId,
       capacity: p.capacity,
-      title: slug.replace(/^\w/, c => c.toUpperCase()),
+      floor: p.floor,
+      title: p.name?.en || slug.replace(/^\w/, c => c.toUpperCase()),
       description: `Sleeps up to ${p.capacity}`,
       images: [main],
     }
@@ -37,6 +38,19 @@ function next(i: number) {
   const imgs = apartments.value[i]?.images ?? []
   if (!imgs.length) return
   slideIndex.value[i] = (slideIndex.value[i] + 1) % imgs.length
+}
+
+// Transition handlers to avoid inline arrow functions in template
+function onEnter(el: Element) {
+  const h = (el as HTMLElement).scrollHeight
+  ;(el as HTMLElement).style.height = h + 'px'
+}
+function onAfterEnter(el: Element) {
+  ;(el as HTMLElement).style.height = 'auto'
+}
+function onLeave(el: Element) {
+  const h = (el as HTMLElement).scrollHeight
+  ;(el as HTMLElement).style.height = h + 'px'
 }
 
 // Beds24 booking URL
@@ -68,36 +82,30 @@ function toggle(slug: string) {
 </script>
 
 <template>
-  <section class="relative w-full py-16 md:py-24">
-    <div class="container max-w-7xl">
+  <section class="section bg-gray-200 pt-40">
+    <div class="container">
 
-      <!-- Top nav -->
-      <div class="mb-6">
-        <NuxtLink to="/" class="inline-flex items-center gap-2 text-white/90 hover:text-white underline">
-          ← Home
-        </NuxtLink>
-      </div>
-
+   
       <!-- Header -->
-      <div class="text-center mb-12">
-        <h1 class="heading">Apartments</h1>
-        <p class="subheading">
+      <div class="text-center mb-14">
+        <h1 class="heading text-4xl md:text-6xl">Apartments</h1>
+        <p class="subheading text-gray-700 pb-10 md:pb-20">
           Select an apartment and complete your booking securely.
         </p>
       </div>
 
       <!-- Rows: image left, widget right -->
-      <div class="space-y-12">
-        <div v-for="(apt, i) in apartments" :key="apt.slug" class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+      <div class="space-y-16">
+        <div v-for="(apt, i) in apartments" :key="apt.slug" class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
           <!-- Image column -->
           <div>
-            <div class="mb-3">
-              <h3 class="text-2xl font-semibold mb-1">{{ apt.title }}</h3>
-              <p class="text-slate-300">{{ apt.description }}</p>
-              <span class="chip w-fit mt-2">Max {{ apt.capacity }}</span>
+            <div class="mb-3 space-y-1">
+              <h3 class="uppercase tracking-widest text-blue-600 text-2xl font-black">{{ apt.title }}</h3>
+              <p class="text-gray-800 tracking-wide">Floor: {{ apt.floor }}</p>
+              <p class="text-gray-800 tracking-wide">Guests: up to {{ apt.capacity }}</p>
             </div>
-            <div class="relative h-64 md:h-72 rounded-2xl overflow-hidden border border-white/10">
-              <img :src="apt.images[slideIndex[i]]" :alt="apt.title" class="absolute inset-0 w-full h-full object-cover" />
+            <div class="relative h-72 md:h-80 rounded-2xl overflow-hidden border border-black/10">
+              <img :src="apt.images[slideIndex[i] ?? 0]" :alt="apt.title" class="absolute inset-0 w-full h-full object-cover" />
               <button v-if="apt.images.length > 1" @click="next(i)" class="absolute right-3 bottom-3 bg-black/60 text-white px-3 py-1 rounded-full">→</button>
             </div>
 
@@ -106,7 +114,7 @@ function toggle(slug: string) {
               <button class="btn-primary" @click="toggle(apt.slug)">
                 {{ open.has(apt.slug) ? 'Hide availability' : 'Check availability' }}
               </button>
-              <a :href="bookingUrl(apt.roomId)" target="_blank" rel="noopener" class="btn-secondary">Book on Beds24</a>
+              <a :href="bookingUrl(apt.roomId)" target="_blank" rel="noopener" class="btn-secondary text-lime-700 hover:text-lime-800">Book on Beds24</a>
             </div>
           </div>
 
@@ -114,9 +122,9 @@ function toggle(slug: string) {
           <div class="flex flex-col gap-4">
             <transition
               name="expand"
-              @enter="el => (el.style.height = el.scrollHeight + 'px')"
-              @after-enter="el => (el.style.height = 'auto')"
-              @leave="el => (el.style.height = el.scrollHeight + 'px')"
+              @enter="onEnter"
+              @after-enter="onAfterEnter"
+              @leave="onLeave"
             >
               <div v-if="open.has(apt.slug)" class="overflow-hidden">
                 <BookingWidget :fixed-room-id="Number(apt.roomId)" compact />
@@ -128,6 +136,7 @@ function toggle(slug: string) {
 
     </div>
   </section>
+  <Contact />
   
 </template>
 
