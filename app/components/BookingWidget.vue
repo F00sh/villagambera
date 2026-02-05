@@ -33,7 +33,8 @@ const roomId = ref<number>(isFixedRoom.value ? (props.fixedRoomId as number) : (
 const adults = ref(2);
 const children = ref(0);
 
-const selectedRoom = computed(() => ROOMS.find(r => r.id === roomId.value) ?? ROOMS[0]);
+// Selected room is always defined because ROOMS is non-empty
+const selectedRoom = computed((): Room => (ROOMS.find(r => r.id === roomId.value) ?? ROOMS[0]!));
 const maxGuests = computed(() => selectedRoom.value?.maxGuests ?? 1);
 const guests = computed(() => adults.value + children.value);
 
@@ -42,7 +43,7 @@ const roomIndex = computed(() => Math.max(0, ROOMS.findIndex(r => r.id === roomI
 function setRoomByIndex(idx: number) {
   if (!ROOMS.length) return;
   const i = (idx + ROOMS.length) % ROOMS.length;
-  roomId.value = ROOMS[i].id;
+  roomId.value = ROOMS[i]!.id;
 }
 function prevRoom() { setRoomByIndex(roomIndex.value - 1); }
 function nextRoom() { setRoomByIndex(roomIndex.value + 1); }
@@ -371,7 +372,7 @@ function goToPayment() {
         <!-- Room switcher (all breakpoints) -->
         <div v-if="!isFixedRoom" class="room-switcher">
           <button type="button" class="switch" @click="prevRoom" aria-label="Previous room">‹</button>
-          <div class="room-title">{{ selectedRoom.name }} · up to {{ selectedRoom.maxGuests }}</div>
+          <div class="room-title">{{ selectedRoom?.name || "" }} · up to {{ selectedRoom?.maxGuests ?? "" }}</div>
           <button type="button" class="switch" @click="nextRoom" aria-label="Next room">›</button>
         </div>
 
@@ -444,10 +445,8 @@ function goToPayment() {
           :disabled="!cell.iso || !isSelectableCell(cell.iso)"
           @click="cell.iso && onDayClick(cell.iso)"
         >
-          <template v-if="cell.iso">
-            <div class="d">{{ Number(cell.iso.slice(-2)) }}</div>
-            <div class="p">{{ '' }}</div>
-          </template>
+          <div class="d" v-if="cell.iso">{{ Number(cell.iso.slice(-2)) }}</div>
+          <div class="p" v-if="cell.iso">{{ '' }}</div>
         </button>
       </div>
 
@@ -477,197 +476,206 @@ function goToPayment() {
 </template>
 
 <style scoped>
-/* Glassy compact widget */
+/* === Theme & Tokens ============================================== */
 .widget {
-  /* palette tuned to site (sea blue + olive) */
-  --fg: rgba(15, 23, 42, 0.92);          /* slate-900 with alpha */
-  --fg-soft: rgba(15, 23, 42, 0.72);
-  --bg: rgba(255, 255, 255, 0.38);
-  --panel: rgba(255, 255, 255, 0.34);
-  --border: rgba(2, 6, 23, 0.12);
-  --shadow: rgba(2, 6, 23, 0.14);
-  --ok: 101, 163, 13;                    /* lime-600 (olive-ish) */
-  --bad: 239, 68, 68;                    /* red-500 */
-  --accent: 30, 136, 229;                /* sea blue #1e88e5 */
+  --fg: rgba(17, 24, 39, 0.96);             /* primary text */
+  --fg-soft: rgba(17, 24, 39, 0.75);        /* secondary text */
+  --line: rgba(2, 6, 23, 0.10);             /* hairline border */
+  --shadow: rgba(2, 6, 23, 0.18);           /* soft shadow */
+  --accent: 24, 124, 210;                   /* calm sea blue */
+  --ok: 101, 163, 13;                       /* olive */
+  --bad: 220, 38, 38;                       /* red */
+}
 
+/* === Glass Layers (container/panels/buttons) ===================== */
+/* Container glass */
+.widget {
   max-width: 860px;
   display: grid;
-  gap: 16px;                              /* more breathing room */
-  padding: 16px;
-  border-radius: 18px;
-  background: rgba(255,255,255,0.10);
-  border: 1px solid rgba(255,255,255,0.10);
-  box-shadow: 0 10px 30px var(--shadow);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  gap: 18px;
+  padding: 18px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.08));
+  border: 1px solid rgba(255,255,255,0.16);
+  box-shadow: 0 14px 40px var(--shadow);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   color: var(--fg);
-  font-family: "Lexend", sans-serif;
+  font-family: "Lexend", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   font-optical-sizing: auto;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
-/* Compact variant */
-.widget.compact {
-  max-width: 860px;
-  gap: 12px;
-  padding: 12px;
-  max-height: 85dvh;
-  overflow: auto;
+/* Panel glass (calendar, summary) */
+.calendar,
+.sum-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.50), rgba(255,255,255,0.36));
+  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.10);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
-.widget.compact .title { font-size: 0.9rem; font-weight: 600; }
-.widget.compact .times { font-size: 0.78rem; }
-.widget.compact .cal-title { font-size: 0.9rem; }
-.widget.compact .selected { padding: 8px; }
-.widget.compact .grid { gap: 3px; }
-.widget.compact .day { min-height: 40px; padding: 5px; }
-.widget.compact .d { font-size: 0.9rem; }
-.widget.compact .p { font-size: 0.75rem; }
 
-.header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 2px; }
-.title { font-weight: 600; font-size: 0.95rem; color: rgb(var(--accent)); letter-spacing: 0.06em; }
-.times { color: var(--fg-soft); font-size: 0.82rem; letter-spacing: 0.04em; }
-.clear {
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.5);
-  padding: 6px 10px;
-  border-radius: 10px;
-  backdrop-filter: blur(10px);
-  color: var(--fg);
-  }
-.clear:disabled { opacity: 0.45; cursor: not-allowed; }
+/* Chip glass (selected values) */
+.selected {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.58), rgba(255,255,255,0.42));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
 
-.close { border: 1px solid var(--border); background: rgba(255,255,255,0.5); padding: 6px 10px; border-radius: 10px; }
+/* Subtle glass buttons */
+.clear,
+.close,
+.room-switcher .switch,
+.stepper .step-btn,
+.calendar .cal-header button {
+  border: 1px solid var(--line);
+  background: linear-gradient(135deg, rgba(255,255,255,0.66), rgba(255,255,255,0.48));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
 
-.field { display: grid; gap: 6px; }
+/* === Typography & Hierarchy ====================================== */
+.header { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.title  { font-weight: 700; font-size: 1rem; color: rgba(var(--accent), 1); letter-spacing: 0.04em; text-transform: uppercase; }
+.times  { color: var(--fg-soft); font-size: 0.86rem; letter-spacing: 0.02em; }
+.muted  { color: var(--fg-soft); font-size: 0.84rem; letter-spacing: 0.01em; }
+
+/* Visual hierarchy */
+.content-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.summary { display: grid; gap: 12px; }
+
+/* Primary CTA emphasis */
+.cta {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--accent), 0.45);
+  background: linear-gradient(180deg, rgba(var(--accent), 0.92), rgba(var(--accent), 0.98));
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  box-shadow: 0 8px 22px rgba(var(--accent), 0.22);
+}
+.cta:hover { filter: brightness(1.02); }
+.cta:disabled { opacity: 0.48; cursor: not-allowed; box-shadow: none; }
+
+/* === Controls ===================================================== */
+.clear, .close { padding: 8px 12px; border-radius: 12px; color: var(--fg); }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-.calendar {
-  display: grid; gap: 8px; padding: 10px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--panel);
-  backdrop-filter: blur(10px);
-}
-.cal-header { display: grid; grid-template-columns: 34px 1fr 34px; align-items: center; }
-.cal-title { text-align: center; font-weight: 600; font-size: 0.9rem; color: var(--fg); letter-spacing: 0.04em; }
+/* Room switcher */
+.room-switcher { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 10px; margin-bottom: 6px; }
+.room-switcher .switch { height: 44px; width: 44px; border-radius: 12px; }
+.room-switcher .room-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; font-size: 0.95rem; text-align: center; }
 
-.controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-.selected {
-  padding: 8px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: rgba(255,255,255,0.52);
-  color: var(--fg);
-}
-.muted { color: var(--fg-soft); font-size: 0.82rem; letter-spacing: 0.03em; }
+/* Steppers */
+.stepper { display: grid; gap: 6px; }
+.stepper .label { font-size: 0.9rem; color: var(--fg-soft); letter-spacing: 0.01em; }
+.stepper .controls { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; }
+.stepper .step-btn { height: 44px; width: 44px; border-radius: 12px; }
+.stepper .value { text-align: center; font-weight: 600; letter-spacing: 0.01em; }
 
-.nights-toggle { margin-top: 2px; }
-.nights-toggle select {
-  border-radius: 8px; border: 1px solid var(--border);
-  background: rgba(255,255,255,0.5);
-  padding: 6px 8px;
-  color: var(--fg);
-}
-.range-error {
-  color: #b00020;
-  padding: 8px 10px;
-  border: 1px solid #ffd0d0;
-  background: rgba(255, 240, 240, 0.7);
-  border-radius: 10px;
-}
+/* Nights / Selected blocks */
+.controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.selected { padding: 10px; }
 
-.grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-.dow { text-align: center; font-size: 0.78rem; color: var(--fg-soft); letter-spacing: 0.03em; }
+/* === Calendar ===================================================== */
+.calendar { display: grid; gap: 10px; padding: 12px; box-sizing: border-box; }
+.cal-header { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; }
+.cal-title  { text-align: center; font-weight: 700; font-size: 0.98rem; letter-spacing: 0.03em; }
 
-.day {
-  min-height: 46px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 6px;
-  text-align: left;
-  background: rgba(255,255,255,0.7);
-  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-  color: var(--fg);
-}
+/* Day-of-week header */
+.dow { text-align: center; font-size: 0.8rem; color: var(--fg-soft); letter-spacing: 0.02em; }
+
+/* Grid */
+.grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; width: 100%; box-sizing: border-box; }
+
+/* Day cell base */
+.day { min-height: 44px; padding: 6px; border-radius: 10px; border: 1px solid var(--line); text-align: left; color: var(--fg); background: rgba(255,255,255,0.70); box-sizing: border-box; transition: background .15s ease, border-color .15s ease, box-shadow .15s ease; }
 .day.empty { border: none; background: transparent; }
-.day:not(.empty):hover { border-color: rgba(2,6,23,0.22); box-shadow: 0 1px 4px rgba(2,6,23,0.12); }
+.day:not(.empty):hover { border-color: rgba(2,6,23,0.22); box-shadow: 0 2px 8px rgba(2,6,23,0.12); }
 
-/* Availability coloring with translucent tones */
-.day.unavailable { background: rgba(var(--bad), 0.18); border-color: rgba(var(--bad), 0.55); }
-.day.disabled { opacity: 0.35; cursor: not-allowed; }
-
-.day.stay { background: rgba(var(--ok), 0.18); border-color: rgba(var(--ok), 0.52); }
-.day.start, .day.end { background: rgba(var(--ok), 0.28); border-color: rgba(var(--ok), 0.65); box-shadow: 0 0 0 1px rgba(var(--ok), 0.25) inset; }
-
-.d { font-weight: 600; font-size: 0.92rem; color: var(--fg); letter-spacing: 0.02em; }
+/* Day content */
+.d { font-weight: 500; font-size: 0.95rem; letter-spacing: 0.01em; }
 .p { font-size: 0.78rem; color: var(--fg-soft); }
 
-.legend { display: flex; gap: 12px; align-items: center; font-size: 0.82rem; opacity: 0.9; margin-top: 4px; }
+/* === Calendar States ============================================= */
+.day.unavailable { background: rgba(var(--bad), 0.16); border-color: rgba(var(--bad), 0.42); }
+.day.disabled    { opacity: 0.38; cursor: not-allowed; }
+.day.stay        { background: rgba(var(--ok), 0.20); border-color: rgba(var(--ok), 0.50); }
+.day.start,
+.day.end         { background: rgba(var(--ok), 0.30); border-color: rgba(var(--ok), 0.62); box-shadow: 0 0 0 1px rgba(var(--ok), 0.25) inset; }
+
+/* Errors & helpers */
+.range-error { color: #b00020; padding: 8px 10px; border: 1px solid #ffd0d0; background: rgba(255, 240, 240, 0.7); border-radius: 10px; }
+.error { color: #b00020; }
+.legend { display: flex; gap: 12px; align-items: center; font-size: 0.84rem; opacity: 0.9; }
 .swatch { width: 12px; height: 12px; border-radius: 4px; border: 1px solid #ddd; display: inline-block; margin-right: 6px; }
 .swatch.green { background: rgba(var(--ok), 0.28); border-color: rgba(var(--ok), 0.65); }
-.swatch.red { background: rgba(var(--bad), 0.22); border-color: rgba(var(--bad), 0.6); }
+.swatch.red   { background: rgba(var(--bad), 0.22); border-color: rgba(var(--bad), 0.60); }
 .swatch.white { background: rgba(255,255,255,0.75); }
+.fineprint { font-size: 0.8rem; color: var(--fg-soft); letter-spacing: 0.01em; }
 
-.cta {
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(var(--ok), 0.55);
-  background: linear-gradient(180deg, rgba(var(--ok), 0.92), rgba(var(--ok), 0.98));
-  color: white;
-  backdrop-filter: blur(6px);
-  font-weight: 600;
+/* === Summary Card ================================================ */
+.sum-card { padding: 12px; display: grid; gap: 10px; }
+.sum-row { display: flex; justify-content: space-between; font-size: 0.95rem; letter-spacing: 0.005em; }
+.sum-total { display: flex; justify-content: space-between; font-weight: 800; padding-top: 8px; border-top: 1px dashed var(--line); }
+
+/* === Responsiveness ============================================== */
+@media (min-width: 640px) {
+  .content-grid { grid-template-columns: 1fr 1fr; gap: 18px; }
 }
-.cta:hover { filter: brightness(1.03); }
-.cta:disabled { opacity: 0.45; cursor: not-allowed; }
-
-.error { color: #b00020; }
-.fineprint { font-size: 0.8rem; color: var(--fg-soft); letter-spacing: 0.03em; }
-
-/* Two-column content */
-.content-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
 @media (min-width: 768px) {
   .content-grid { grid-template-columns: 5fr 4fr; align-items: start; }
 }
-.summary { display: grid; gap: 12px; }
-.sum-card { display: grid; gap: 8px; border: 1px solid var(--border); background: rgba(255,255,255,0.6); border-radius: 12px; padding: 10px; backdrop-filter: blur(10px); }
-.sum-row { display: flex; justify-content: space-between; font-size: 0.9rem; letter-spacing: 0.02em; }
-.sum-total { display: flex; justify-content: space-between; font-weight: 700; padding-top: 6px; border-top: 1px dashed var(--border); }
 
-/* Mobile room switcher */
-.room-switcher { display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; gap: 8px; margin-bottom: 6px; }
-.room-switcher .switch { height: 36px; width: 36px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.6); }
-.room-switcher .room-title { font-weight: 600; font-size: 0.9rem; color: var(--fg); text-align: center; letter-spacing: 0.03em; }
+/* Smaller phones */
+@media (max-width: 480px) {
+  .calendar { padding: 8px; }
+  .grid { gap: 4px; }
+  .day { min-height: 40px; padding: 4px; }
+  .cal-header { grid-template-columns: 36px 1fr 36px; }
+  .calendar .cal-header button { height: 36px; width: 36px; }
+}
+@media (max-width: 420px) {
+  .cal-header { grid-template-columns: 30px 1fr 30px; }
+  .calendar .cal-header button { height: 30px; width: 30px; }
+  .grid { gap: 3px; }
+  .day { min-height: 36px; padding: 3px; }
+  .room-switcher { grid-template-columns: 34px 1fr 34px; }
+  .room-switcher .switch { height: 34px; width: 34px; }
+  .stepper .controls { grid-template-columns: 34px 1fr 34px; }
+  .stepper .step-btn { height: 34px; width: 34px; }
+}
+@media (max-width: 360px) {
+  .header { gap: 8px; }
+  .times { display: none; }
+  .calendar { padding: 4px; }
+  .cal-header { grid-template-columns: 26px 1fr 26px; }
+  .calendar .cal-header button { height: 26px; width: 26px; }
+  .grid { gap: 2px; }
+  .day { min-height: 32px; padding: 2px; }
+  .dow { font-size: 0.66rem; }
+  .d   { font-size: 0.82rem; }
+}
 
-/* Steppers */
-.stepper { display: grid; grid-template-columns: 1fr; gap: 6px; }
-.stepper .label { font-size: 0.88rem; color: var(--fg-soft); letter-spacing: 0.03em; }
-.stepper .controls { display: grid; grid-template-columns: 36px 1fr 36px; align-items: center; gap: 6px; }
-.stepper .step-btn { height: 36px; width: 36px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.6); }
-.stepper .value { text-align: center; font-weight: 600; letter-spacing: 0.02em; }
+/* === Fallbacks (no backdrop support) ============================= */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .widget { background: rgba(255,255,255,0.94) !important; }
+  .calendar, .sum-card, .selected,
+  .clear, .close, .room-switcher .switch, .stepper .step-btn, .calendar .cal-header button {
+    background: rgba(255,255,255,0.94) !important;
+  }
+}
 
-/* Style the embedded guest form as a glass panel */
-:deep(.guest-form) {
-  display: grid;
-  gap: 10px;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: rgba(255,255,255,0.5);
-  backdrop-filter: blur(10px);
-  color: var(--fg);
-}
-:deep(.guest-form .row) { gap: 10px; }
-:deep(.guest-form input), :deep(.guest-form textarea), :deep(.guest-form select) {
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.6);
-  padding: 8px 10px;
-  color: var(--fg);
-}
-:deep(.guest-form .error) {
-  color: #b00020;
-  padding: 8px 10px;
-  border: 1px solid #ffd0d0;
-  background: rgba(255, 240, 240, 0.7);
-  border-radius: 10px;
-}
+/* === Embedded guest form (if present) ============================ */
+:deep(.guest-form) { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--fg); }
+:deep(.guest-form input), :deep(.guest-form textarea), :deep(.guest-form select) { border-radius: 8px; border: 1px solid var(--line); background: rgba(255,255,255,0.7); padding: 8px 10px; color: var(--fg); }
+:deep(.guest-form .error) { color: #b00020; padding: 8px 10px; border: 1px solid #ffd0d0; background: rgba(255, 240, 240, 0.7); border-radius: 10px; }
 </style>

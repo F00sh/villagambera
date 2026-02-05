@@ -85,15 +85,16 @@ const amenitySlides = [
 </template>
 
 <style scoped>
-@reference "tailwindcss";
-
 .amenity-chip {
-  @apply flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur transition duration-200 hover:bg-white/10 hover:-translate-y-0.5;
+  display: flex; align-items: center; gap: 0.75rem; border-radius: 1rem; border: 1px solid rgba(255,255,255,0.10); background: rgba(255,255,255,0.05); padding: 0.75rem 1rem; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: all 200ms var(--ease-smooth); }
+.amenity-chip:hover { background: rgba(255,255,255,0.10); transform: translateY(-0.125rem);
 }
 .amenity-icon {
-  @apply text-xl md:text-2xl;
+  font-size: 1.25rem; line-height: 1.75rem; }
+@media (min-width: 768px) { .amenity-icon { font-size: 1.5rem; line-height: 2rem; }
 }
 .amenity-text {
-  @apply text-sm md:text-base tracking-wide;
+  font-size: 0.875rem; line-height: 1.25rem; letter-spacing: .025em; }
+@media (min-width: 768px) { .amenity-text { font-size: 1rem; line-height: 1.5rem; }
 }
 </style>

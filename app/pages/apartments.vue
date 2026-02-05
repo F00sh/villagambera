@@ -37,7 +37,7 @@ watchEffect(() => {
 function next(i: number) {
   const imgs = apartments.value[i]?.images ?? []
   if (!imgs.length) return
-  slideIndex.value[i] = (slideIndex.value[i] + 1) % imgs.length
+  slideIndex.value[i] = (slideIndex.value[i]! + 1) % imgs.length
 }
 
 // Transition handlers to avoid inline arrow functions in template

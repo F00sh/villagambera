@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-@reference "tailwindcss";
 
 @layer base {
   :root {
@@ -49,8 +48,13 @@
   p { font-weight: 300; }
   .hero-smooth { transition: min-height var(--dur-slow) var(--ease-smooth); will-change: min-height; }
   .section {
-    @apply w-full py-24 md:py-28;
+    width: 100%;
+    padding-top: 6rem;
+    padding-bottom: 6rem;
     background-color: var(--bg);
+  }
+  @media (min-width: 768px) {
+    .section { padding-top: 7rem; padding-bottom: 7rem; }
   }
 
   /* Remove outer page gutters: no top padding on first section, no bottom on last */
@@ -58,7 +62,14 @@
   .section:last-of-type { padding-bottom: 0; }
 
   .container {
-    @apply mx-auto max-w-7xl px-6 md:px-8;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 80rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+  @media (min-width: 768px) {
+    .container { padding-left: 2rem; padding-right: 2rem; }
   }
 
   /* Anchor scroll offset for fixed navbar */
@@ -68,7 +79,16 @@
   }
 
   .heading {
-    @apply text-3xl md:text-5xl font-black uppercase tracking-widest;
+    font-size: 1.875rem; /* 3xl */
+    line-height: 2.25rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .2em;
+  }
+  @media (min-width: 768px) {
+    .heading { font-size: 3rem; line-height: 1.1; }
+  }
+  .heading {
     color: #1e88e5; /* sea blue */
     font-family: "Lexend", sans-serif;
     font-optical-sizing: auto;
@@ -76,33 +96,55 @@
   }
 
   .subheading {
-    @apply mt-3 text-slate-400 tracking-wide font-medium;
+    margin-top: 0.75rem;
+    color: #94a3b8; /* slate-400 */
+    letter-spacing: .04em;
+    font-weight: 500;
   }
 
   .card {
-    @apply rounded-2xl backdrop-blur;
+    border-radius: 1rem;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     background: var(--surface);
     border: 1px solid var(--border);
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-xl text-white font-semibold px-6 py-3 transition;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    color: #fff;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    transition: all var(--dur-base) var(--ease-smooth);
     background-color: #65a30d; /* lime-600 as olive-ish */
   }
   .btn-primary:hover { background-color: #84cc16; /* lime-500 */ }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center rounded-xl px-6 py-3 hover:bg-white/5 transition;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 0.75rem; padding: 0.75rem 1.5rem;
+    transition: all var(--dur-base) var(--ease-smooth);
     color: #c5d99b; /* pastel olive text */
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-xl px-6 py-3 hover:bg-white/5 transition;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 0.75rem; padding: 0.75rem 1.5rem;
+    transition: all var(--dur-base) var(--ease-smooth);
     color: #c5d99b; /* pastel olive text */
   }
 
   .chip {
-    @apply rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-slate-200;
+    border-radius: 9999px;
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.05);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: #e2e8f0; /* slate-200 */
   }
 }
 
